@@ -15,7 +15,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVICE_ACCOUNT_KEY_PATH = os.path.join(BASE_DIR, 'ai-career-hub-55b4a-firebase-adminsdk-fbsvc-3441341585.json')
 
 try:
-    # Check if the app is already initialized to prevent errors on reload
     if not firebase_admin._apps:
         cred = credentials.Certificate(SERVICE_ACCOUNT_KEY_PATH)
         firebase_admin.initialize_app(cred)
@@ -61,20 +60,24 @@ def analyze_resume():
 
         job_description = job_doc.to_dict().get('jobDescription')
 
+        # --- NEW, MORE POWERFUL PROMPT ---
         prompt = f"""
-        Analyze the following resume and job description. Provide specific, actionable feedback on how to tailor the resume to better match the job description. 
-        Focus on identifying missing keywords, suggesting alternative phrasing for experience, and highlighting the most relevant skills.
+        Act as an expert career coach and professional resume writer. Your task is to rewrite the provided resume to be perfectly tailored for the provided job description.
 
-        The output should be a JSON object with two keys: "summary" and "suggestions".
-        - "summary" should be a short, overall assessment.
-        - "suggestions" should be an array of strings, where each string is a concrete suggestion.
+        Follow these instructions carefully:
+        1.  Integrate relevant keywords from the job description naturally into the resume's summary and experience sections.
+        2.  Rephrase experience and project descriptions to directly address the responsibilities and required skills mentioned in the job description.
+        3.  Maintain a professional tone and the original structure of the resume (Summary, Projects, Education, Skills).
+        4.  Ensure the final output is only the rewritten resume text.
+
+        The final output MUST be a JSON object with a single key: "rewritten_resume". The value should be a single string containing the full text of the newly edited and tailored resume.
 
         **Job Description:**
         ---
         {job_description}
         ---
 
-        **Resume:**
+        **Resume to Rewrite:**
         ---
         {resume_text}
         ---
@@ -82,27 +85,21 @@ def analyze_resume():
 
         response = model.generate_content(prompt)
         
-        # --- FIX: Clean and parse the response from the AI ---
         raw_text = response.text
-        # Find the start and end of the JSON block to remove markdown
         json_start = raw_text.find('{')
         json_end = raw_text.rfind('}') + 1
         
         if json_start != -1 and json_end != 0:
             clean_json_string = raw_text[json_start:json_end]
-            # Parse the clean string into a Python dictionary
             parsed_json = json.loads(clean_json_string)
-            # Return the dictionary as a JSON response
             return jsonify(parsed_json), 200
         else:
-            # If we can't find JSON, return an error
             return jsonify({"error": "Failed to parse AI response."}), 500
 
     except Exception as e:
         print(f"Error during analysis: {e}")
         return jsonify({"error": str(e)}), 500
 
-# Other routes (get_jobs, etc.) can remain the same
 @app.route("/jobs", methods=['GET'])
 def get_jobs():
     try:

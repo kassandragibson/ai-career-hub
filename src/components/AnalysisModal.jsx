@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Bot } from 'lucide-react';
+import { X, Bot, Clipboard, Check } from 'lucide-react';
 import styles from './AnalysisModal.module.css';
 
 export default function AnalysisModal({ isOpen, onClose, job }) {
@@ -7,6 +7,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
   const [analysis, setAnalysis] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [hasCopied, setHasCopied] = useState(false);
 
   if (!isOpen) {
     return null;
@@ -20,6 +21,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
     setError('');
     setIsLoading(true);
     setAnalysis(null);
+    setHasCopied(false);
 
     try {
       const response = await fetch('http://127.0.0.1:5001/analyze', {
@@ -36,12 +38,9 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
       const result = await response.json();
 
       if (!response.ok) {
-        // Use the error message from the backend if available
         throw new Error(result.error || `HTTP error! status: ${response.status}`);
       }
       
-      // --- FIX: No need to parse the result anymore ---
-      // The backend now sends a clean JSON object.
       setAnalysis(result);
 
     } catch (e) {
@@ -52,12 +51,38 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
     }
   };
   
-  // When closing the modal, reset all the state
+  const handleCopyToClipboard = () => {
+    if (analysis && analysis.rewritten_resume) {
+      // Using the Clipboard API
+      navigator.clipboard.writeText(analysis.rewritten_resume).then(() => {
+        setHasCopied(true);
+        setTimeout(() => setHasCopied(false), 2000); // Reset after 2 seconds
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+        // Fallback for older browsers
+        try {
+          const textArea = document.createElement('textarea');
+          textArea.value = analysis.rewritten_resume;
+          document.body.appendChild(textArea);
+          textArea.focus();
+          textArea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textArea);
+          setHasCopied(true);
+          setTimeout(() => setHasCopied(false), 2000);
+        } catch (fallbackErr) {
+          console.error('Fallback copy failed:', fallbackErr);
+        }
+      });
+    }
+  };
+
   const handleClose = () => {
     setResumeText('');
     setAnalysis(null);
     setIsLoading(false);
     setError('');
+    setHasCopied(false);
     onClose();
   }
 
@@ -65,7 +90,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
     <div className={styles.modalOverlay}>
       <div className={styles.modalContent}>
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>Analyze Resume for: {job.jobTitle}</h2>
+          <h2 className={styles.modalTitle}>Tailor Resume for: {job.jobTitle}</h2>
           <button onClick={handleClose} className={styles.closeButton}>
             <X height={24} width={24} color="#64748b" />
           </button>
@@ -74,7 +99,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
         <div className={styles.modalBody}>
           <div className={styles.formGroup}>
             <label htmlFor="resumeText" className={styles.formLabel}>
-              Paste your resume content here
+              Paste your original resume content here
             </label>
             <textarea
               id="resumeText"
@@ -91,21 +116,24 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
           {isLoading && (
             <div style={{textAlign: 'center', margin: '1rem 0'}}>
                 <div className={styles.loader} style={{margin: '0 auto'}}></div>
-                <p>Analyzing... Please wait.</p>
+                <p>Rewriting your resume... Please wait.</p>
             </div>
           )}
 
-          {analysis && (
+          {analysis && analysis.rewritten_resume && (
             <div className={styles.analysisResult}>
-              <h3 className={styles.analysisTitle}>AI Suggestions</h3>
-              <div className={styles.analysisSummary}>
-                <strong>Summary:</strong> {analysis.summary}
+              <h3 className={styles.analysisTitle}>AI-Tailored Resume</h3>
+              <div className={styles.rewrittenResumeContainer}>
+                <textarea
+                  readOnly
+                  className={styles.rewrittenResumeTextarea}
+                  value={analysis.rewritten_resume}
+                />
+                <button onClick={handleCopyToClipboard} className={styles.copyButton}>
+                  {hasCopied ? <Check size={14} /> : <Clipboard size={14} />}
+                  {hasCopied ? 'Copied!' : 'Copy'}
+                </button>
               </div>
-              <ul className={styles.suggestionList}>
-                {analysis.suggestions.map((suggestion, index) => (
-                  <li key={index}>{suggestion}</li>
-                ))}
-              </ul>
             </div>
           )}
         </div>
@@ -117,7 +145,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
             disabled={isLoading || !resumeText.trim()}
           >
             {isLoading ? <div className={styles.loader}></div> : <Bot height={20} width={20} />}
-            Analyze
+            Rewrite Resume
           </button>
         </div>
       </div>
