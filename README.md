@@ -1,96 +1,104 @@
-AI Career Hub
-An intelligent assistant designed to streamline and optimize the job search process. This application helps users track job applications, tailor resumes to specific roles, and manage their career development efforts with the help of AI.
+# AI Career Hub
 
-✨ Current Features
-Job Application Tracking: Add and view a list of all your current job applications, with data persisted in a Firestore database.
+An intelligent, full-stack application designed to streamline and optimize the job search process. This application empowers users to track their job applications and leverage the power of Google's Gemini API to receive AI-driven feedback on how to tailor their resumes for specific roles.
 
-Real-time UI: The frontend is connected to Firestore with a real-time listener, so data updates automatically across sessions.
+![AI Career Hub Screenshot](https://placehold.co/800x450/e2e8f0/334155?text=App+Screenshot+Here)
+*(Suggestion: Replace the placeholder above with a screenshot or GIF of your application in action!)*
 
-Functional Frontend: A clean, responsive dashboard built with React to manage applications.
+---
 
-Python Backend API: A Flask server that connects to the Firestore database and exposes a /jobs endpoint to retrieve all application data.
+## ✨ Core Features
 
-🚀 Technology Stack
+* **Job Application Tracking:** Add and view a list of all your current job applications. All data is persisted in a secure, cloud-based Firestore database.
+* **Real-time UI:** The frontend is connected to Firestore with a real-time listener, so data updates automatically across sessions.
+* **AI-Powered Resume Analysis:** For any saved job, users can paste their resume text and receive instant, actionable feedback from the Gemini API on how to improve it.
+* **Full-Stack Architecture:** A complete separation of concerns between the React frontend and the Python (Flask) backend, which communicate via a REST API.
+
+## 🚀 Technology Stack
+
 This project is built with a modern, full-stack architecture:
 
-Frontend:
+* **Frontend:**
+    * **[React](https://reactjs.org/)**: A powerful JavaScript library for building the user interface.
+    * **[Vite](https://vitejs.dev/)**: Next-generation frontend tooling for a fast and efficient development experience.
+    * **[CSS Modules](https://github.com/css-modules/css-modules)**: For locally scoped, conflict-free component styling.
+* **Backend:**
+    * **[Python](https://www.python.org/)** with **[Flask](https://flask.palletsprojects.com/)**: A lightweight server that provides a REST API for the frontend.
+    * **[Firebase Admin SDK](https://firebase.google.com/docs/admin/setup)**: For secure, server-side access to the database.
+* **Database:**
+    * **[Firestore](https://firebase.google.com/docs/firestore)**: A scalable NoSQL database for storing all application and user data.
+* **AI Integration:**
+    * **[Google Gemini API](https://ai.google.dev/)**: The core AI engine used for resume analysis and suggestion generation.
 
-React: A powerful JavaScript library for building user interfaces.
+## 🔧 Getting Started
 
-Vite: A next-generation frontend tooling for a fast development experience.
-
-CSS Modules: For locally scoped, conflict-free CSS styling.
-
-Backend:
-
-Python with Flask: A lightweight server that provides a REST API.
-
-Firebase Admin SDK: For secure, server-side access to the database.
-
-Database:
-
-Firestore: A NoSQL database for storing application and user data.
-
-🔧 Getting Started
 To get a local copy up and running, you will need to run both the frontend and backend servers.
 
-# Prerequisites
-Node.js (LTS version recommended)
+### Prerequisites
 
-Python 3.x
+* Node.js (LTS version recommended)
+* Python 3.x
+* A Google account for Firebase and Google AI Studio
 
-A Google account for Firebase
+### Installation & Setup
 
-# Installation & Setup
-Clone the repo
+1.  **Clone the repo**
+    ```sh
+    git clone [https://github.com/YourUsername/ai-career-hub.git](https://github.com/YourUsername/ai-career-hub.git)
+    ```
+2.  **Setup Firebase**
+    * Create a Firebase project and a Firestore database in "test mode".
+    * Generate a private key file (a `.json` service account file) from your Firebase project settings (`Service accounts` tab).
+    * Place the downloaded JSON key file inside the `backend/` directory.
 
-git clone https://github.com/YourUsername/ai-career-hub.git
+3.  **Setup Environment Variables**
+    * Get a Gemini API Key from [Google AI Studio](https://aistudio.google.com/).
+    * In the `backend/` directory, create a file named `.env`.
+    * Add your Gemini API key to the `.env` file:
+        ```
+        GEMINI_API_KEY="YOUR_API_KEY_HERE"
+        ```
+    * **Important:** Add the `.json` key file and the `.env` file to your main `.gitignore` file to keep your credentials secure:
+        ```
+        # .gitignore
+        *.json
+        .env
+        ```
 
-# Setup Firebase
+4.  **Setup Frontend** (in a new terminal)
+    ```sh
+    cd ai-career-hub
+    npm install
+    npm run dev
+    ```
+    * Your React app should now be running on `http://localhost:5173`.
 
-Create a Firebase project and a Firestore database in "test mode".
+5.  **Setup Backend** (in a second terminal)
+    ```sh
+    cd ai-career-hub/backend
+    
+    # Create and activate a virtual environment
+    python -m venv venv
+    source venv/Scripts/activate
+    
+    # Install Python packages
+    pip install -r requirements.txt 
+    # (Note: You should create a requirements.txt file with 'pip freeze > requirements.txt')
+    
+    # Run the server
+    python app.py
+    ```
+    * Your Python backend should now be running on `http://localhost:5001`.
 
-Generate a private key file (a .json service account file) from your Firebase project settings.
+## Roadmap
 
-Place the downloaded JSON key file inside the backend/ directory.
+With the core functionality complete, future enhancements could include:
 
-Important: Add the name of your .json key file to your main .gitignore file to keep it secure (e.g., *.json).
+* [ ] **User Authentication:** Allow multiple users to securely manage their own job applications.
+* [ ] **Save Analysis History:** Store past resume analyses in Firestore to track improvements over time.
+* [ ] **Automated Cover Letter Generation:** Use the job description and tailored resume to generate a first draft of a cover letter.
+* [ ] **UI/UX Enhancements:** Add more detailed status tracking (e.g., "Interviewing", "Offer") and data visualizations.
 
-# Setup Frontend (in a new terminal)
+---
 
-cd ai-career-hub
-npm install
-npm run dev
-
-Your React app should now be running on http://localhost:5173.
-
-# Setup Backend (in a second terminal)
-
-cd ai-career-hub/backend
-
-# Create a virtual environment
-python -m venv venv
-
-# Activate it
-source venv/Scripts/activate
-
-# Install Python packages
-pip install Flask Flask-Cors firebase-admin google-cloud-firestore python-dotenv
-
-# Run the server
-python app.py
-
-Your Python backend should now be running on http://localhost:5001.
-
-Roadmap
-[ ] Integrate the Gemini API for AI-powered resume tailoring.
-
-[ ] Create a new API endpoint in the backend to handle AI requests.
-
-[ ] Connect the React frontend to the new AI endpoint.
-
-[ ] Add user authentication.
-
-[ ] Implement cover letter generation.
-
-This project is being built with the assistance of Google's Gemini.
+_This project was built with the assistance of Google's Gemini._

@@ -1,51 +1,75 @@
 import { useState, useEffect } from 'react';
-import { Plus, Briefcase } from 'lucide-react';
+import { Plus, Briefcase, Bot } from 'lucide-react';
 import { collection, addDoc, onSnapshot, query } from 'firebase/firestore';
-import { db } from './firebase.js'; // Import our database connection
+import { db } from './firebase.js';
 import NewApplicationModal from './components/NewApplicationModal.jsx';
+import AnalysisModal from './components/AnalysisModal.jsx'; // Import the new modal
 import styles from './App.module.css';
 
-// Main application component
 export default function App() {
   const [jobs, setJobs] = useState([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNewAppModalOpen, setIsNewAppModalOpen] = useState(false);
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null); // To track which job to analyze
 
-  // useEffect to fetch and listen for data from Firestore
   useEffect(() => {
-    // Create a query against the 'jobs' collection
     const q = query(collection(db, 'jobs'));
-    
-    // onSnapshot sets up a real-time listener
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const jobsArray = [];
       querySnapshot.forEach((doc) => {
-        // Add the document data and its ID to our array
         jobsArray.push({ ...doc.data(), id: doc.id });
       });
       // Sort jobs by date applied, newest first
-      jobsArray.sort((a, b) => b.dateApplied.toMillis() - a.dateApplied.toMillis());
+      jobsArray.sort((a, b) => {
+        const dateA = a.dateApplied?.toMillis() || 0;
+        const dateB = b.dateApplied?.toMillis() || 0;
+        return dateB - dateA;
+      });
       setJobs(jobsArray);
     });
-
-    // Clean up the listener when the component unmounts
     return () => unsubscribe();
-  }, []); // The empty array [] means this effect runs once on mount
+  }, []);
 
-  // handleSaveApplication is now an async function to work with the database
   const handleSaveApplication = async (newJobData) => {
     try {
-      // Add a new document with a generated id.
       await addDoc(collection(db, "jobs"), {
         ...newJobData,
-        dateApplied: new Date() // Store the full date object
+        dateApplied: new Date()
       });
-      // No need to call setJobs here, onSnapshot will do it for us!
-      setIsModalOpen(false);
+      setIsNewAppModalOpen(false);
     } catch (e) {
       console.error("Error adding document: ", e);
-      // You could add some user-facing error handling here
     }
   };
+
+  // Function to open the analysis modal
+  const openAnalysisModal = (job) => {
+    setSelectedJob(job);
+    setIsAnalysisModalOpen(true);
+  };
+  
+  // A new CSS class for the actions container
+  const jobItemActionsStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: '0.5rem'
+  };
+  
+  const analyzeButtonStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '0.25rem',
+    backgroundColor: '#16a34a', /* green-600 */
+    color: 'white',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '9999px',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.75rem',
+    fontWeight: '600'
+  };
+
 
   return (
     <div className="container">
@@ -55,7 +79,7 @@ export default function App() {
           <p className={styles.headerSubtitle}>Your intelligent assistant for the job search</p>
         </div>
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsNewAppModalOpen(true)}
           className={styles.newAppButton}
         >
           <Plus height={20} width={20} />
@@ -65,7 +89,6 @@ export default function App() {
 
       <main>
         <h2 className={styles.mainContentTitle}>My Job Applications</h2>
-        
         <div className={styles.jobsListContainer}>
           {jobs.length === 0 ? (
             <div className={styles.emptyState}>
@@ -83,12 +106,15 @@ export default function App() {
                     <h3 className={styles.jobItemTitle}>{job.jobTitle}</h3>
                     <p className={styles.jobItemCompany}>{job.company}</p>
                   </div>
-                  <div className={styles.jobItemDetails}>
-                    {/* Convert Firestore Timestamp to readable date */}
-                    <p className={styles.jobItemDate}>Applied: {new Date(job.dateApplied.seconds * 1000).toLocaleDateString()}</p>
-                    <span className={styles.jobItemStatus}>
-                      Applied
-                    </span>
+                  <div style={jobItemActionsStyle}>
+                    <p className={styles.jobItemDate}>Applied: {job.dateApplied ? new Date(job.dateApplied.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                    <button 
+                      style={analyzeButtonStyle}
+                      onClick={() => openAnalysisModal(job)}
+                    >
+                      <Bot height={16} width={16} />
+                      Analyze
+                    </button>
                   </div>
                 </div>
               ))}
@@ -102,10 +128,22 @@ export default function App() {
       </footer>
       
       <NewApplicationModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isNewAppModalOpen} 
+        onClose={() => setIsNewAppModalOpen(false)}
         onSave={handleSaveApplication}
       />
+
+      {/* Conditionally render the Analysis Modal */}
+      {selectedJob && (
+        <AnalysisModal 
+          isOpen={isAnalysisModalOpen}
+          onClose={() => {
+            setIsAnalysisModalOpen(false);
+            setSelectedJob(null);
+          }}
+          job={selectedJob}
+        />
+      )}
     </div>
   );
 }
