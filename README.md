@@ -1,15 +1,70 @@
-# ai-career-hub
-An AI-powered job tracker
+AI Career Hub
+An intelligent assistant designed to streamline and optimize the job search process. This application helps users track job applications, tailor resumes to specific roles, and manage their career development efforts with the help of AI.
 
-# React + Vite
+✨ Current Features
+Job Application Tracking: Add and view a list of all your current job applications.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Modern User Interface: A clean, responsive dashboard to manage your applications.
 
-Currently, two official plugins are available:
+New Application Modal: A user-friendly form to input details for new job applications (Company Name, Job Title, Job Description).
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🚀 Technology Stack
+This project is built with a modern, in-demand technology stack:
 
-## Expanding the ESLint configuration
+Frontend:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+React: A powerful JavaScript library for building user interfaces.
+
+Vite: A next-generation frontend tooling for a fast development experience.
+
+CSS Modules: For locally scoped, conflict-free CSS styling.
+
+Backend (Planned):
+
+Python with Flask/FastAPI: To handle server-side logic and AI integration.
+
+Gemini API: For all AI-powered features, including resume analysis and content generation.
+
+Database (Planned):
+
+Firestore: A NoSQL database for storing application and user data.
+
+🔧 Getting Started
+To get a local copy up and running, follow these simple steps.
+
+Prerequisites
+Node.js (LTS version recommended)
+
+npm (comes with Node.js)
+
+Installation
+Clone the repo
+
+git clone https://github.com/YourUsername/ai-career-hub.git
+
+Navigate into the project directory
+
+cd ai-career-hub
+
+Install NPM packages
+
+npm install
+
+Start the development server
+
+npm run dev
+
+Open http://localhost:5173 (or the URL provided in your terminal) to view it in the browser.
+
+Roadmap
+[ ] Connect frontend to a Firestore database to persist data.
+
+[ ] Build out the Python backend server.
+
+[ ] Integrate the Gemini API for AI-powered resume tailoring.
+
+[ ] Add user authentication.
+
+[ ] Implement cover letter generation.
+
+This project is being built with the assistance of Google's Gemini.
