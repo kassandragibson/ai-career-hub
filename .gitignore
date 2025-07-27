@@ -81,3 +81,6 @@ web_modules/
 
 # End of line normalization
 .DS_Store
+
+# Firebase service account key
+ai-career-hub-55b4a-firebase-adminsdk-fbsvc-3441341585.json
