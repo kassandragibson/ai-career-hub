@@ -1,0 +1,158 @@
+/* Styles for App.jsx */
+
+.header {
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid #e2e8f0; /* slate-200 */
+}
+
+@media (min-width: 640px) {
+  .header {
+    align-items: center;
+  }
+}
+
+.headerTitle {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #0f172a; /* slate-900 */
+}
+
+.headerSubtitle {
+  color: #64748b; /* slate-500 */
+  margin-top: 0.25rem;
+}
+
+.newAppButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2563eb; /* blue-600 */
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+  transition: background-color 0.2s;
+  margin-top: 1rem; /* Add margin for small screens */
+}
+
+@media (min-width: 640px) {
+  .newAppButton {
+    margin-top: 0;
+  }
+}
+
+.newAppButton:hover {
+  background-color: #1d4ed8; /* blue-700 */
+}
+
+.newAppButton > svg {
+  margin-right: 0.5rem;
+}
+
+.mainContentTitle {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: #0f172a; /* slate-900 */
+}
+
+.jobsListContainer {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  border: 1px solid #f1f5f9; /* slate-100 */
+}
+
+.emptyState {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.emptyStateIconContainer {
+  height: 4rem;
+  width: 4rem;
+  background-color: #f1f5f9; /* slate-100 */
+  border-radius: 9999px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emptyStateTitle {
+  margin-top: 1rem;
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #0f172a; /* slate-900 */
+}
+
+.emptyStateSubtitle {
+  margin-top: 0.25rem;
+  color: #64748b; /* slate-500 */
+}
+
+.jobsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.jobItem {
+  padding: 1rem;
+  border: 1px solid #e2e8f0; /* slate-200 */
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.jobItem:hover {
+  background-color: #f8fafc; /* slate-50 */
+}
+
+.jobItemTitle {
+  font-weight: bold;
+  font-size: 1.125rem;
+  color: #1e293b; /* slate-800 */
+}
+
+.jobItemCompany {
+  color: #475569; /* slate-600 */
+}
+
+.jobItemDetails {
+  text-align: right;
+}
+
+.jobItemDate {
+  font-size: 0.875rem;
+  color: #64748b; /* slate-500 */
+}
+
+.jobItemStatus {
+  margin-top: 0.25rem;
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1e40af; /* blue-800 */
+  background-color: #dbeafe; /* blue-100 */
+  border-radius: 9999px;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 3rem;
+  font-size: 0.875rem;
+  color: #94a3b8; /* slate-400 */
+}

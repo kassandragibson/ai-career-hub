@@ -1,3 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Global styles for the application */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f8fafc; /* Equivalent to bg-slate-50 */
+  color: #1e293b; /* Equivalent to text-slate-800 */
+}
+
+/* A simple container to center content */
+.container {
+  max-width: 1024px;
+  margin: 0 auto;
+  padding: 2rem;
+}
