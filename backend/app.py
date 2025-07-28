@@ -42,63 +42,47 @@ except Exception as e:
 app = Flask(__name__)
 CORS(app)
 
+# --- Helper Function to Clean AI Response ---
+def clean_ai_response(raw_text):
+    json_start = raw_text.find('{')
+    json_end = raw_text.rfind('}') + 1
+    if json_start != -1 and json_end != 0:
+        clean_json_string = raw_text[json_start:json_end]
+        return json.loads(clean_json_string)
+    return None
+
 # --- API Routes ---
 @app.route("/analyze", methods=['POST'])
 def analyze_resume():
     try:
         data = request.get_json()
-        user_id = data.get('userId') # Get the user ID from the request
-        job_id = data.get('jobId')
-        resume_text = data.get('resumeText')
+        user_id, job_id, resume_text = data.get('userId'), data.get('jobId'), data.get('resumeText')
 
         if not all([user_id, job_id, resume_text]):
             return jsonify({"error": "userId, jobId, and resumeText are required"}), 400
 
         job_doc_ref = db.collection('users', user_id, 'jobs').document(job_id)
         job_doc = job_doc_ref.get()
-
         if not job_doc.exists:
             return jsonify({"error": "Job not found"}), 404
-
         job_description = job_doc.to_dict().get('jobDescription')
 
         prompt = f"""
         Act as an expert career coach and professional resume writer. Your task is to rewrite the provided resume to be perfectly tailored for the provided job description.
-        Follow these instructions carefully:
-        1.  Integrate relevant keywords from the job description naturally into the resume's summary and experience sections.
-        2.  Rephrase experience and project descriptions to directly address the responsibilities and required skills mentioned in the job description.
-        3.  Maintain a professional tone and the original structure of the resume (Summary, Projects, Education, Skills).
-        4.  Ensure the final output is only the rewritten resume text.
         The final output MUST be a JSON object with a single key: "rewritten_resume". The value should be a single string containing the full text of the newly edited and tailored resume.
-        **Job Description:**
-        ---
-        {job_description}
-        ---
-        **Resume to Rewrite:**
-        ---
-        {resume_text}
-        ---
+        **Job Description:**\n{job_description}\n\n**Resume to Rewrite:**\n{resume_text}
         """
 
         response = model.generate_content(prompt)
+        parsed_json = clean_ai_response(response.text)
         
-        raw_text = response.text
-        json_start = raw_text.find('{')
-        json_end = raw_text.rfind('}') + 1
-        
-        if json_start != -1 and json_end != 0:
-            clean_json_string = raw_text[json_start:json_end]
-            parsed_json = json.loads(clean_json_string)
-
-            # --- NEW: Save the analysis to a sub-collection ---
+        if parsed_json:
             analyses_collection_ref = job_doc_ref.collection('analyses')
             analyses_collection_ref.add({
                 'original_resume': resume_text,
                 'rewritten_resume': parsed_json.get('rewritten_resume'),
                 'analyzed_at': datetime.utcnow()
             })
-            # --- END OF NEW CODE ---
-
             return jsonify(parsed_json), 200
         else:
             return jsonify({"error": "Failed to parse AI response."}), 500
@@ -107,26 +91,55 @@ def analyze_resume():
         print(f"Error during analysis: {e}")
         return jsonify({"error": str(e)}), 500
 
-@app.route("/jobs", methods=['GET'])
-def get_jobs():
+# --- NEW: Cover Letter Generation Endpoint ---
+@app.route("/generate-cover-letter", methods=['POST'])
+def generate_cover_letter():
     try:
-        # This route would need to be secured in a real production app
-        # For now, it's open for simplicity
-        # A better approach would be to get the user ID from a secure token
-        user_id = request.args.get('userId')
-        if not user_id:
-            return jsonify({"error": "userId parameter is required"}), 400
-            
-        jobs_ref = db.collection('users', user_id, 'jobs')
-        docs = jobs_ref.stream()
-        jobs_list = []
-        for doc in docs:
-            job_data = doc.to_dict()
-            job_data['id'] = doc.id
-            jobs_list.append(job_data)
-        return jsonify(jobs_list), 200
+        data = request.get_json()
+        user_id = data.get('userId')
+        job_id = data.get('jobId')
+        resume_text = data.get('resumeText') # This should be the AI-tailored resume
+
+        if not all([user_id, job_id, resume_text]):
+            return jsonify({"error": "userId, jobId, and resumeText are required"}), 400
+
+        job_doc_ref = db.collection('users', user_id, 'jobs').document(job_id)
+        job_doc = job_doc_ref.get()
+        if not job_doc.exists:
+            return jsonify({"error": "Job not found"}), 404
+        
+        job_info = job_doc.to_dict()
+        job_description = job_info.get('jobDescription')
+        job_title = job_info.get('jobTitle')
+        company_name = job_info.get('company')
+
+        prompt = f"""
+        Act as an expert career coach. Your task is to write a professional and compelling cover letter based on the provided tailored resume and job description.
+
+        Instructions:
+        1. The tone should be professional, confident, and enthusiastic.
+        2. The letter should be structured with an introduction, a body, and a conclusion.
+        3. The body should highlight 2-3 key experiences or skills from the resume that directly align with the most important requirements in the job description.
+        4. The letter should be addressed to the "Hiring Manager" at the specified company.
+        5. The final output MUST be a JSON object with a single key: "cover_letter". The value should be a single string containing the full text of the cover letter.
+
+        **Company Name:** {company_name}
+        **Job Title:** {job_title}
+        **Job Description:**\n{job_description}\n\n**Tailored Resume:**\n{resume_text}
+        """
+
+        response = model.generate_content(prompt)
+        parsed_json = clean_ai_response(response.text)
+
+        if parsed_json:
+            return jsonify(parsed_json), 200
+        else:
+            return jsonify({"error": "Failed to parse AI response."}), 500
+
     except Exception as e:
+        print(f"Error generating cover letter: {e}")
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)

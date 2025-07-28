@@ -169,6 +169,23 @@
   background-color: #15803d; /* green-700 */
 }
 
+/* --- NEW STYLES FOR COVER LETTER --- */
+.coverLetterButton {
+  background-color: #4f46e5; /* indigo-600 */
+  color: white;
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+}
+
+.coverLetterButton:hover:not(:disabled) {
+  background-color: #4338ca; /* indigo-700 */
+}
+
+.coverLetterContainer {
+  margin-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1.5rem;
+}
+
 .loader {
   border: 2px solid #f3f3f3;
   border-top: 2px solid #16a34a;
