@@ -16,6 +16,23 @@
   }
 }
 
+.headerLeft {
+  /* This container holds the title and subtitle */
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem; /* Add margin for small screens */
+}
+
+@media (min-width: 640px) {
+  .headerRight {
+    margin-top: 0;
+  }
+}
+
 .headerTitle {
   font-size: 1.875rem;
   font-weight: bold;
@@ -40,13 +57,6 @@
   cursor: pointer;
   box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
   transition: background-color 0.2s;
-  margin-top: 1rem; /* Add margin for small screens */
-}
-
-@media (min-width: 640px) {
-  .newAppButton {
-    margin-top: 0;
-  }
 }
 
 .newAppButton:hover {
@@ -56,6 +66,24 @@
 .newAppButton > svg {
   margin-right: 0.5rem;
 }
+
+/* --- NEW STYLE FOR SIGN OUT BUTTON --- */
+.signOutButton {
+  background-color: transparent;
+  color: #64748b; /* slate-500 */
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0; /* slate-200 */
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.signOutButton:hover {
+  background-color: #f8fafc; /* slate-50 */
+  color: #1e293b; /* slate-800 */
+}
+/* --- END OF NEW STYLE --- */
 
 .mainContentTitle {
   font-size: 1.5rem;
