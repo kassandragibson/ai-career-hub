@@ -6,6 +6,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from dotenv import load_dotenv
 import google.generativeai as genai
+from datetime import datetime
 
 # --- Initialization ---
 load_dotenv()
@@ -46,13 +47,14 @@ CORS(app)
 def analyze_resume():
     try:
         data = request.get_json()
+        user_id = data.get('userId') # Get the user ID from the request
         job_id = data.get('jobId')
         resume_text = data.get('resumeText')
 
-        if not job_id or not resume_text:
-            return jsonify({"error": "jobId and resumeText are required"}), 400
+        if not all([user_id, job_id, resume_text]):
+            return jsonify({"error": "userId, jobId, and resumeText are required"}), 400
 
-        job_doc_ref = db.collection('jobs').document(job_id)
+        job_doc_ref = db.collection('users', user_id, 'jobs').document(job_id)
         job_doc = job_doc_ref.get()
 
         if not job_doc.exists:
@@ -60,23 +62,18 @@ def analyze_resume():
 
         job_description = job_doc.to_dict().get('jobDescription')
 
-        # --- NEW, MORE POWERFUL PROMPT ---
         prompt = f"""
         Act as an expert career coach and professional resume writer. Your task is to rewrite the provided resume to be perfectly tailored for the provided job description.
-
         Follow these instructions carefully:
         1.  Integrate relevant keywords from the job description naturally into the resume's summary and experience sections.
         2.  Rephrase experience and project descriptions to directly address the responsibilities and required skills mentioned in the job description.
         3.  Maintain a professional tone and the original structure of the resume (Summary, Projects, Education, Skills).
         4.  Ensure the final output is only the rewritten resume text.
-
         The final output MUST be a JSON object with a single key: "rewritten_resume". The value should be a single string containing the full text of the newly edited and tailored resume.
-
         **Job Description:**
         ---
         {job_description}
         ---
-
         **Resume to Rewrite:**
         ---
         {resume_text}
@@ -92,6 +89,16 @@ def analyze_resume():
         if json_start != -1 and json_end != 0:
             clean_json_string = raw_text[json_start:json_end]
             parsed_json = json.loads(clean_json_string)
+
+            # --- NEW: Save the analysis to a sub-collection ---
+            analyses_collection_ref = job_doc_ref.collection('analyses')
+            analyses_collection_ref.add({
+                'original_resume': resume_text,
+                'rewritten_resume': parsed_json.get('rewritten_resume'),
+                'analyzed_at': datetime.utcnow()
+            })
+            # --- END OF NEW CODE ---
+
             return jsonify(parsed_json), 200
         else:
             return jsonify({"error": "Failed to parse AI response."}), 500
@@ -103,7 +110,14 @@ def analyze_resume():
 @app.route("/jobs", methods=['GET'])
 def get_jobs():
     try:
-        jobs_ref = db.collection('jobs')
+        # This route would need to be secured in a real production app
+        # For now, it's open for simplicity
+        # A better approach would be to get the user ID from a secure token
+        user_id = request.args.get('userId')
+        if not user_id:
+            return jsonify({"error": "userId parameter is required"}), 400
+            
+        jobs_ref = db.collection('users', user_id, 'jobs')
         docs = jobs_ref.stream()
         jobs_list = []
         for doc in docs:

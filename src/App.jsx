@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus, Briefcase, Bot, LogOut, AlertCircle } from 'lucide-react';
+import { Plus, Briefcase, Bot, LogOut, AlertCircle, History } from 'lucide-react';
 import { collection, addDoc, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from './firebase.js';
 import NewApplicationModal from './components/NewApplicationModal.jsx';
 import AnalysisModal from './components/AnalysisModal.jsx';
+import HistoryModal from './components/HistoryModal.jsx'; // Import the new HistoryModal
 import AuthPage from './pages/AuthPage.jsx';
 import styles from './App.module.css';
 
@@ -13,6 +14,7 @@ function Dashboard({ user }) {
   const [jobs, setJobs] = useState([]);
   const [isNewAppModalOpen, setIsNewAppModalOpen] = useState(false);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false); // State for history modal
   const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
@@ -62,6 +64,11 @@ function Dashboard({ user }) {
     setIsAnalysisModalOpen(true);
   };
 
+  const openHistoryModal = (job) => {
+    setSelectedJob(job);
+    setIsHistoryModalOpen(true);
+  };
+
   const getStatusClass = (status) => {
     switch (status) {
       case 'Interviewing': return styles.statusInterviewing;
@@ -71,7 +78,6 @@ function Dashboard({ user }) {
     }
   };
 
-  // Helper function to check if a follow-up is needed
   const shouldShowFollowUp = (job) => {
     if (job.status !== 'Applied' || !job.dateApplied?.toDate) {
       return false;
@@ -87,9 +93,13 @@ function Dashboard({ user }) {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem'
   };
   
-  const analyzeButtonStyle = {
-    display: 'inline-flex', alignItems: 'center', gap: '0.25rem', backgroundColor: '#16a34a', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600'
+  const buttonStyle = {
+    display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600'
   };
+  
+  const analyzeButtonStyle = { ...buttonStyle, backgroundColor: '#16a34a' };
+  const historyButtonStyle = { ...buttonStyle, backgroundColor: '#475569' };
+
 
   return (
     <div className="container">
@@ -147,9 +157,14 @@ function Dashboard({ user }) {
                         <AlertCircle size={14} /> Follow Up!
                       </div>
                     )}
-                    <button style={analyzeButtonStyle} onClick={() => openAnalysisModal(job)}>
-                      <Bot height={16} width={16} /> Analyze
-                    </button>
+                    <div style={{display: 'flex', gap: '0.5rem'}}>
+                      <button style={historyButtonStyle} onClick={() => openHistoryModal(job)}>
+                        <History size={14} /> History
+                      </button>
+                      <button style={analyzeButtonStyle} onClick={() => openAnalysisModal(job)}>
+                        <Bot size={14} /> Analyze
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -161,7 +176,24 @@ function Dashboard({ user }) {
       <footer className={styles.footer}><p>&copy; 2025 AI Career Hub. Built with Gemini.</p></footer>
       
       <NewApplicationModal isOpen={isNewAppModalOpen} onClose={() => setIsNewAppModalOpen(false)} onSave={handleSaveApplication} />
-      {selectedJob && <AnalysisModal isOpen={isAnalysisModalOpen} onClose={() => { setIsAnalysisModalOpen(false); setSelectedJob(null); }} job={selectedJob} />}
+      
+      {selectedJob && (
+        <AnalysisModal 
+          isOpen={isAnalysisModalOpen} 
+          onClose={() => { setIsAnalysisModalOpen(false); setSelectedJob(null); }} 
+          job={selectedJob}
+          user={user} 
+        />
+      )}
+
+      {selectedJob && (
+        <HistoryModal 
+          isOpen={isHistoryModalOpen}
+          onClose={() => { setIsHistoryModalOpen(false); setSelectedJob(null); }}
+          job={selectedJob}
+          user={user}
+        />
+      )}
     </div>
   );
 }

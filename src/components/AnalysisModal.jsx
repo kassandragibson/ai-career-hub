@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { X, Bot, Clipboard, Check } from 'lucide-react';
 import styles from './AnalysisModal.module.css';
 
-export default function AnalysisModal({ isOpen, onClose, job }) {
+// Accept 'user' as a prop
+export default function AnalysisModal({ isOpen, onClose, job, user }) {
   const [resumeText, setResumeText] = useState('');
   const [analysis, setAnalysis] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,7 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          userId: user.uid, // Send the user's ID to the backend
           jobId: job.id,
           resumeText: resumeText,
         }),
@@ -53,26 +55,11 @@ export default function AnalysisModal({ isOpen, onClose, job }) {
   
   const handleCopyToClipboard = () => {
     if (analysis && analysis.rewritten_resume) {
-      // Using the Clipboard API
       navigator.clipboard.writeText(analysis.rewritten_resume).then(() => {
         setHasCopied(true);
-        setTimeout(() => setHasCopied(false), 2000); // Reset after 2 seconds
+        setTimeout(() => setHasCopied(false), 2000);
       }).catch(err => {
         console.error('Failed to copy text: ', err);
-        // Fallback for older browsers
-        try {
-          const textArea = document.createElement('textarea');
-          textArea.value = analysis.rewritten_resume;
-          document.body.appendChild(textArea);
-          textArea.focus();
-          textArea.select();
-          document.execCommand('copy');
-          document.body.removeChild(textArea);
-          setHasCopied(true);
-          setTimeout(() => setHasCopied(false), 2000);
-        } catch (fallbackErr) {
-          console.error('Fallback copy failed:', fallbackErr);
-        }
       });
     }
   };
