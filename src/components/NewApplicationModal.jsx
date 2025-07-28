@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import styles from './NewApplicationModal.module.css'; // Import the CSS module
+import styles from './NewApplicationModal.module.css';
 
 export default function NewApplicationModal({ isOpen, onClose, onSave }) {
   const [company, setCompany] = useState('');
@@ -12,7 +12,9 @@ export default function NewApplicationModal({ isOpen, onClose, onSave }) {
   }
 
   const handleSave = () => {
-    onSave({ company, jobTitle, jobDescription });
+    // Add the default status to the new job data
+    onSave({ company, jobTitle, jobDescription, status: 'Applied' });
+    
     setCompany('');
     setJobTitle('');
     setJobDescription('');
@@ -24,7 +26,7 @@ export default function NewApplicationModal({ isOpen, onClose, onSave }) {
         <div className={styles.modalHeader}>
           <h2 className={styles.modalTitle}>New Job Application</h2>
           <button onClick={onClose} className={styles.closeButton}>
-            <X height={24} width={24} color="#64748b" /> {/* slate-500 */}
+            <X height={24} width={24} color="#64748b" />
           </button>
         </div>
         

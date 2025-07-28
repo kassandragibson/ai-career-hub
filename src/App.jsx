@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Plus, Briefcase, Bot, LogOut } from 'lucide-react';
-import { collection, addDoc, onSnapshot, query } from 'firebase/firestore';
+import { Plus, Briefcase, Bot, LogOut, AlertCircle } from 'lucide-react';
+import { collection, addDoc, onSnapshot, query, doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { db, auth } from './firebase.js';
 import NewApplicationModal from './components/NewApplicationModal.jsx';
 import AnalysisModal from './components/AnalysisModal.jsx';
-import AuthPage from './pages/AuthPage.jsx'; // Import the new AuthPage
+import AuthPage from './pages/AuthPage.jsx';
 import styles from './App.module.css';
 
 // This is the main component for the authenticated part of the app
@@ -15,15 +15,10 @@ function Dashboard({ user }) {
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
   const [selectedJob, setSelectedJob] = useState(null);
 
-  // useEffect to fetch data based on the logged-in user
   useEffect(() => {
-    if (!user) return; // Don't fetch if no user
-
-    // IMPORTANT: The path now includes the user's ID to fetch only their jobs
-    // We create a reference to the user's specific 'jobs' sub-collection
+    if (!user) return;
     const jobsCollectionRef = collection(db, 'users', user.uid, 'jobs');
     const q = query(jobsCollectionRef);
-    
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const jobsArray = [];
       querySnapshot.forEach((doc) => {
@@ -33,11 +28,10 @@ function Dashboard({ user }) {
       setJobs(jobsArray);
     });
     return () => unsubscribe();
-  }, [user]); // Rerun this effect if the user changes
+  }, [user]);
 
   const handleSaveApplication = async (newJobData) => {
     try {
-      // IMPORTANT: The path now includes the user's ID to save the job under their profile
       await addDoc(collection(db, "users", user.uid, "jobs"), {
         ...newJobData,
         dateApplied: new Date()
@@ -47,7 +41,18 @@ function Dashboard({ user }) {
       console.error("Error adding document: ", e);
     }
   };
-  
+
+  const handleStatusChange = async (jobId, newStatus) => {
+    const jobDocRef = doc(db, 'users', user.uid, 'jobs', jobId);
+    try {
+      await updateDoc(jobDocRef, {
+        status: newStatus
+      });
+    } catch (e) {
+      console.error("Error updating status: ", e);
+    }
+  };
+
   const handleSignOut = () => {
     signOut(auth).catch((error) => console.error("Sign out error", error));
   };
@@ -57,9 +62,31 @@ function Dashboard({ user }) {
     setIsAnalysisModalOpen(true);
   };
 
+  const getStatusClass = (status) => {
+    switch (status) {
+      case 'Interviewing': return styles.statusInterviewing;
+      case 'Offer': return styles.statusOffer;
+      case 'Rejected': return styles.statusRejected;
+      default: return styles.statusApplied;
+    }
+  };
+
+  // Helper function to check if a follow-up is needed
+  const shouldShowFollowUp = (job) => {
+    if (job.status !== 'Applied' || !job.dateApplied?.toDate) {
+      return false;
+    }
+    const appliedDate = job.dateApplied.toDate();
+    const today = new Date();
+    const timeDiff = today.getTime() - appliedDate.getTime();
+    const daysDiff = timeDiff / (1000 * 3600 * 24);
+    return daysDiff >= 7;
+  };
+
   const jobItemActionsStyle = {
     display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem'
   };
+  
   const analyzeButtonStyle = {
     display: 'inline-flex', alignItems: 'center', gap: '0.25rem', backgroundColor: '#16a34a', color: 'white', padding: '0.25rem 0.75rem', borderRadius: '9999px', border: 'none', cursor: 'pointer', fontSize: '0.75rem', fontWeight: '600'
   };
@@ -97,9 +124,29 @@ function Dashboard({ user }) {
                   <div>
                     <h3 className={styles.jobItemTitle}>{job.jobTitle}</h3>
                     <p className={styles.jobItemCompany}>{job.company}</p>
+                    <p className={styles.jobItemDate}>
+                      Applied: {job.dateApplied ? new Date(job.dateApplied.seconds * 1000).toLocaleDateString() : 'N/A'}
+                    </p>
                   </div>
                   <div style={jobItemActionsStyle}>
-                    <p className={styles.jobItemDate}>Applied: {job.dateApplied ? new Date(job.dateApplied.seconds * 1000).toLocaleDateString() : 'N/A'}</p>
+                    <div className={`${styles.statusBadge} ${getStatusClass(job.status)}`}>
+                      {job.status}
+                    </div>
+                    <select 
+                      className={styles.statusSelect}
+                      value={job.status || 'Applied'}
+                      onChange={(e) => handleStatusChange(job.id, e.target.value)}
+                    >
+                      <option value="Applied">Applied</option>
+                      <option value="Interviewing">Interviewing</option>
+                      <option value="Offer">Offer</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
+                    {shouldShowFollowUp(job) && (
+                      <div className={styles.followUpAlert}>
+                        <AlertCircle size={14} /> Follow Up!
+                      </div>
+                    )}
                     <button style={analyzeButtonStyle} onClick={() => openAnalysisModal(job)}>
                       <Bot height={16} width={16} /> Analyze
                     </button>
@@ -124,18 +171,16 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen to the Firebase Auth state and set the user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-    // Cleanup subscription on unmount
     return () => unsubscribe();
   }, []);
 
   if (loading) {
-    return <div style={{textAlign: 'center', paddingTop: '5rem', fontSize: '1.2rem'}}>Loading...</div>; // Or a fancy spinner component
+    return <div style={{textAlign: 'center', paddingTop: '5rem', fontSize: '1.2rem'}}>Loading...</div>;
   }
 
   return user ? <Dashboard user={user} /> : <AuthPage />;
