@@ -12,6 +12,7 @@ An intelligent, full-stack application designed to streamline and optimize the j
 * **Secure User Authentication:** Users can sign up and log in with an email and password. All user data is secured and private to their account.
 * **Dynamic Job Application Tracking:** Add and view a list of all your current job applications. The dashboard includes an interactive status tracker (Applied, Interviewing, Offer, Rejected) and an automatic 7-day follow-up reminder.
 * **AI-Powered Resume Rewriting:** For any saved job, users can paste their resume text and receive an instantly rewritten, tailored version from the Gemini API, optimized with keywords from the job description.
+* **Automated Cover Letter Generation:** After rewriting a resume, users can generate a first draft of a cover letter with a single click.
 * **Analysis History:** Every AI-generated resume is automatically saved. Users can view a complete history of all analyses for a specific job, allowing them to track versions and easily access previously tailored resumes.
 * **Full-Stack Architecture:** A complete separation of concerns between the React frontend and the Python (Flask) backend, which communicate via a REST API.
 * **Real-time & Persistent Data:** The application uses Firestore to persist all data, with a real-time listener on the frontend to ensure the UI is always up-to-date.
@@ -31,7 +32,7 @@ This project is built with a modern, full-stack architecture:
     * **[Firestore](https://firebase.google.com/docs/firestore)**: A scalable NoSQL database for storing all application and user data.
     * **[Firebase Authentication](https://firebase.google.com/docs/auth)**: For handling secure user sign-up and login.
 * **AI Integration:**
-    * **[Google Gemini API](https://ai.google.dev/)**: The core AI engine used for resume analysis and rewriting.
+    * **[Google Gemini API](https://ai.google.dev/)**: The core AI engine used for resume analysis and cover letter generation.
 
 ## 🔧 Getting Started
 
@@ -95,14 +96,45 @@ To get a local copy up and running, you will need to run both the frontend and b
     ```
     * Your Python backend should now be running on `http://localhost:5001`.
 
+## 📖 How to Use the App
+
+Once both servers are running, here's how to use the AI Career Hub:
+
+1.  **Sign Up:** Open the app in your browser (`http://localhost:5173`). You will be greeted with the login page. Click "Sign Up" to create a new account.
+2.  **Add a Job:** Once logged in, you'll see the main dashboard. Click the "New Application" button to add the details of a job you're applying for (Company, Title, and the full Job Description).
+3.  **Rewrite Your Resume:**
+    * On the main dashboard, find the job you want to work on and click the "Analyze" button.
+    * In the modal that appears, paste the full text of your current resume into the top text box.
+    * Click "Rewrite Resume". The AI will generate a new, tailored version of your resume in the text box below. You can copy it using the "Copy" button.
+4.  **Generate a Cover Letter:**
+    * After a tailored resume has been generated, a "Generate Cover Letter" button will appear.
+    * Click it, and the AI will use your new resume and the job description to write a draft of a cover letter.
+5.  **View History:** Click the "History" button on any job card to see a list of all the resumes you've generated for that specific application, sorted by date.
+6.  **Update Status:** Use the dropdown menu on each job card to update your application status from "Applied" to "Interviewing", "Offer", or "Rejected".
+
 ## Roadmap
 
-With the core functionality complete, the next steps could focus on expanding the feature set and preparing for deployment:
+With the core functionality complete, the future roadmap is focused on expanding the feature set, improving the user experience, and preparing the application for a production environment.
 
-* [ ] **Automated Cover Letter Generation:** Use the job description and tailored resume to generate a first draft of a cover letter.
-* [ ] **Enhanced UI for History:** Add a search or filter function to the analysis history modal.
-* [ ] **Secure Firestore Rules:** Move the database out of "test mode" and write secure rules to protect user data in a production environment.
-* [ ] **Deployment:** Deploy the React frontend (e.g., to Netlify/Vercel) and the Python backend (e.g., to Render/Heroku).
+### AI Feature Enhancements
+- [ ] **Interview Preparation Kit:** Generate likely interview questions based on the job description and provide AI feedback on user answers.
+- [ ] **Networking Assistant:** Help users track professional contacts and generate personalized outreach emails.
+- [ ] **"Smart" Follow-up Content:** Move beyond a simple reminder and have the AI generate a draft for a follow-up email.
+
+### UI/UX and Quality of Life Features
+- [ ] **Dashboard Analytics:** Add charts and visuals to track application stats over time.
+- [ ] **Resume Management:** Allow users to upload and manage multiple "base" resumes.
+- [ ] **Enhanced UI for History:** Add a search or filter function to the analysis history modal.
+- [ ] **Dark Mode:** Implement a theme toggle for the application.
+
+### Backend and Architecture Improvements
+- [ ] **Refactor Backend with Flask Blueprints:** Organize backend routes into separate, manageable files.
+- [ ] **Add Unit and Integration Tests:** Write tests for the backend API to ensure reliability.
+- [ ] **Containerize the Application:** Use Docker to package the frontend and backend for easier deployment.
+
+### Deployment and Security
+- [ ] **Secure Firestore Rules:** Move the database out of "test mode" and write secure rules to protect user data.
+- [ ] **Deployment:** Deploy the React frontend (e.g., to Netlify/Vercel) and the Python backend (e.g., to Render/Heroku).
 
 ---
 
